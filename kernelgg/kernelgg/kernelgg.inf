@@ -1,0 +1,87 @@
+;
+; kernelgg.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=kernelgg.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockDown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+kernelgg_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+kernelgg.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%kernelgg.DeviceDesc%=kernelgg_Device, Root\kernelgg ; TODO: edit hw-id
+
+[kernelgg_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+kernelgg.sys
+
+;-------------- Service installation
+[kernelgg_Device.NT.Services]
+AddService = kernelgg,%SPSVCINST_ASSOCSERVICE%, kernelgg_Service_Inst
+
+; -------------- kernelgg driver install sections
+[kernelgg_Service_Inst]
+DisplayName    = %kernelgg.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\kernelgg.sys
+
+;
+;--- kernelgg_Device Coinstaller installation ------
+;
+
+[kernelgg_Device.NT.CoInstallers]
+AddReg=kernelgg_Device_CoInstaller_AddReg
+CopyFiles=kernelgg_Device_CoInstaller_CopyFiles
+
+[kernelgg_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[kernelgg_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[kernelgg_Device.NT.Wdf]
+KmdfService =  kernelgg, kernelgg_wdfsect
+[kernelgg_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "kernelgg Installation Disk"
+kernelgg.DeviceDesc = "kernelgg Device"
+kernelgg.SVCDESC = "kernelgg Service"
